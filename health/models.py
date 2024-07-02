@@ -58,18 +58,27 @@ class Person(models.Model):
         verbose_name_plural = "Граждане"
 
 
-class PersonDirection(models.Model):
+class Disease(models.Model):
+    name = models.CharField(max_length=1000, verbose_name="Заболевание")
+    direction = models.ForeignKey(to=Direction, on_delete=models.PROTECT, verbose_name="Направление заболевания")
+
+    class Meta:
+        verbose_name = "Заболевание"
+        verbose_name_plural = "Заболевания"
+
+
+class PersonDisease(models.Model):
     person = models.ForeignKey(
         to=Person,
         on_delete=models.CASCADE,
         verbose_name="Гражданин",
         related_name=_RELATED_BASE_NAME + 'person'
     )
-    direction = models.ForeignKey(
-        to=Direction,
+    disease = models.ForeignKey(
+        to=Disease,
         on_delete=models.CASCADE,
-        verbose_name="Мед.направление",
-        related_name=_RELATED_BASE_NAME + 'direction'
+        verbose_name="Заболевание",
+        related_name=_RELATED_BASE_NAME + 'disease'
     )
     state = models.ForeignKey(
         to=State,
@@ -77,9 +86,11 @@ class PersonDirection(models.Model):
         verbose_name="Статус",
         related_name=_RELATED_BASE_NAME + 'state'
     )
-    start_from = models.DateTimeField(verbose_name="C")
+    start_from = models.DateTimeField(verbose_name="Дата диагноза")
 
     class Meta:
-        verbose_name = "Статус гражданина по направлению"
-        verbose_name_plural = "Статусы гражданина по направлениям"
+        verbose_name = "Заболевание гражданина"
+        verbose_name_plural = "Заболевания граждан"
+
+
 

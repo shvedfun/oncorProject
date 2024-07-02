@@ -60,7 +60,7 @@ class Person(models.Model):
 
 class Disease(models.Model):
     name = models.CharField(max_length=1000, verbose_name="Заболевание")
-    direction = models.ForeignKey(to=Direction, on_delete=models.PROTECT, verbose_name="Направление заболевания")
+    direction = models.ForeignKey(to=Direction, on_delete=models.CASCADE, verbose_name="Направление заболевания")
 
     class Meta:
         verbose_name = "Заболевание"
@@ -91,6 +91,41 @@ class PersonDisease(models.Model):
     class Meta:
         verbose_name = "Заболевание гражданина"
         verbose_name_plural = "Заболевания граждан"
+
+
+class Examination(models.Model):
+    name = models.CharField(max_length=1000, verbose_name="Обследование")
+    direction = models.ForeignKey(
+        to=Direction, on_delete=models.CASCADE, verbose_name="Направление",
+        related_name=_RELATED_BASE_NAME + "direction"
+    )
+
+    class Meta:
+        verbose_name = "Обследование"
+        verbose_name_plural = "Обследования"
+
+
+class ExaminationScheme(models.Model):
+    examination = models.ForeignKey(to=Examination, on_delete=models.CASCADE, verbose_name="Обследование",
+                                    related_name=_RELATED_BASE_NAME + "examination")
+    scheme = models.JSONField(verbose_name="Схема обследования")
+
+    class Meta:
+        verbose_name = "Схема обследования"
+        verbose_name_plural = "Схемы обследований"
+
+
+class ExaminationPlan(models.Model):
+    person = models.ForeignKey(to=Person, on_delete=models.CASCADE, verbose_name="Гражданин",
+                               related_name=_RELATED_BASE_NAME + "person")
+    examination = models.ForeignKey(to=Examination, on_delete=models.CASCADE, verbose_name="Обследование",
+                                    related_name=_RELATED_BASE_NAME + "examination")
+    date = models.DateField(verbose_name="Плановая дата обследования")
+
+    class Meta:
+        verbose_name = "План обследования"
+        verbose_name_plural = "Планы обследований"
+
 
 
 

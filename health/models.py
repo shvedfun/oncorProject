@@ -127,5 +127,19 @@ class ExaminationPlan(models.Model):
         verbose_name_plural = "Планы обследований"
 
 
+class ExaminationFact(models.Model):
+    person = models.ForeignKey(to=Person, on_delete=models.CASCADE, verbose_name="Гражданин",
+                               related_name=_RELATED_BASE_NAME + "person")
+    examination = models.ForeignKey(to=Examination, on_delete=models.CASCADE, verbose_name="Обследование",
+                                    related_name=_RELATED_BASE_NAME + "examination")
+    date = models.DateField(verbose_name="Фактическая дата обследования")
+    examination_plan = models.ForeignKey(to=ExaminationPlan, on_delete=models.CASCADE,
+                                         verbose_name="Плановое обследование",
+                                         related_name=_RELATED_BASE_NAME + "examination_plan",
+                                         null=True, blank=True)
+
+    class Meta:
+        verbose_name = "Проведенное обследование"
+        verbose_name_plural = "Проведенные обследования"
 
 

@@ -46,11 +46,11 @@ class Person(models.Model):
     name = models.CharField(max_length=200, verbose_name="ФИО")
     gender = models.CharField(choices=GenderEnum.choices, max_length=1, verbose_name="Пол")
     birthday = models.DateTimeField(verbose_name="Дата рождения")
-    directions = models.ManyToManyField(
-        to=Direction, blank=True,
-        through="PersonDirection",
-        related_name=_RELATED_BASE_NAME + "direction",
-        verbose_name="Направления заболеваний"
+    diseases = models.ManyToManyField(
+        to="Disease", blank=True,
+        through="PersonDisease",
+        related_name=_RELATED_BASE_NAME + "Disease",
+        verbose_name="Заболевания"
     )
 
     class Meta:

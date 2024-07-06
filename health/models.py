@@ -31,12 +31,13 @@ class Direction(models.Model):
         verbose_name_plural = "Направления"
 
 
-class State(models.Model):
-    name = models.CharField(max_length=100, verbose_name="Группа")
+class StageDisease(models.Model):
+    name = models.CharField(max_length=100, verbose_name="Этап", db_comment="Этап")
 
     class Meta:
-        verbose_name = "Группа населения"
-        verbose_name_plural = "Группы населения"
+        db_table_comment = "Этап заболевания"
+        verbose_name = "Этап заболевания"
+        verbose_name_plural = "Этапы заболеваний"
 
 
 class GenderEnum(models.TextChoices):
@@ -87,11 +88,12 @@ class PersonDisease(models.Model):
         related_name=_RELATED_BASE_NAME + 'disease',
         db_comment="Заболевание",
     )
-    state = models.ForeignKey(
-        to=State,
+    stage = models.ForeignKey(
+        to=StageDisease,
         on_delete=models.CASCADE,
-        verbose_name="Статус",
-        related_name=_RELATED_BASE_NAME + 'state'
+        verbose_name="Этап",
+        related_name=_RELATED_BASE_NAME + 'stage',
+        null=True
     )
     start_from = models.DateTimeField(verbose_name="Дата диагноза", db_comment="Дата диагноза",)
     finish_at = models.DateTimeField(verbose_name="Дата окончания", db_comment="Дата окончания",

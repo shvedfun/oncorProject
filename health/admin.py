@@ -11,4 +11,5 @@ class RegionAdmin(admin.ModelAdmin):
 
 @admin.register(Person)
 class PersonAdmin(admin.ModelAdmin):
-    list_filter = ('region__name',)
+    pass
+    list_filter = ('region__code',)

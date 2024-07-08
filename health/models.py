@@ -48,7 +48,7 @@ class GenderEnum(models.TextChoices):
 class Person(models.Model):
     name = models.CharField(max_length=200, verbose_name="ФИО", db_comment="ФИО")
     gender = models.CharField(choices=GenderEnum.choices, max_length=1, verbose_name="Пол", db_comment="Пол")
-    birthday = models.DateTimeField(verbose_name="Дата рождения", db_comment="Дата рождения")
+    birthday = models.DateField(verbose_name="Дата рождения", db_comment="Дата рождения")
     diseases = models.ManyToManyField(
         to="Disease", blank=True,
         through="PersonDisease",

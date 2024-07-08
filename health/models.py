@@ -55,6 +55,10 @@ class Person(models.Model):
         related_name=_RELATED_BASE_NAME + "Disease",
         verbose_name="Заболевания",
     )
+    region = models.ForeignKey(
+        to=Region, on_delete=models.CASCADE, verbose_name="Регион",
+        related_name=_RELATED_BASE_NAME + "region", db_comment="Регион", null=True
+    )
 
     class Meta:
         db_table_comment = "Гражданин"

@@ -7,8 +7,9 @@ _RELATED_BASE_NAME = "%(model_name)s_from_"
 
 
 class Region(models.Model):
+    code = models.CharField(max_length=2, verbose_name="Код региона", db_comment="Код региона",
+                            primary_key=True)
     name = models.CharField(max_length=100, verbose_name="Регион", db_comment="Регион",)
-    code = models.CharField(max_length=2, verbose_name="Код региона", db_comment="Код региона")
 
     def __str__(self):
         return f'{self.code} - {self.name}'
@@ -59,6 +60,9 @@ class Person(models.Model):
         to=Region, on_delete=models.CASCADE, verbose_name="Регион",
         related_name=_RELATED_BASE_NAME + "region", db_comment="Регион", null=True
     )
+
+    def __str__(self):
+        return f'{self.name} ({self.id})'
 
     class Meta:
         db_table_comment = "Гражданин"

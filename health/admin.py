@@ -11,4 +11,4 @@ class RegionAdmin(admin.ModelAdmin):
 
 @admin.register(Person)
 class PersonAdmin(admin.ModelAdmin):
-    filter = ('region__name')
+    list_filter = ('region__name',)

@@ -8,3 +8,6 @@ class PopulationDistribution(models.Model):
     distribution = models.JSONField(verbose_name="Распределение популяции")
     updated_at = models.DateTimeField(verbose_name="Изменено", auto_now=True)
     generate_at = models.DateTimeField(verbose_name="Время генерации данных", null=True, blank=True)
+
+    def __str__(self):
+        return f'{self.region}'

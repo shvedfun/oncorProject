@@ -75,6 +75,9 @@ class Disease(models.Model):
     direction = models.ForeignKey(to=Direction, on_delete=models.CASCADE,
                                   verbose_name="Направление заболевания", db_comment="Направление заболевания")
 
+    def __str__(self):
+        return f'{self.name} - ({self.id})'
+
     class Meta:
         db_table_comment = "Заболевание"
         verbose_name = "Заболевание"
@@ -108,6 +111,9 @@ class PersonDisease(models.Model):
                                      null=True, blank=True
                                      )
 
+    def __str__(self):
+        return f'person_id({self.person_id}) - disease_id({self.disease_id})'
+
     class Meta:
         db_table_comment = "Заболевание гражданина"
         verbose_name = "Заболевание гражданина"
@@ -121,6 +127,9 @@ class Examination(models.Model):
         related_name=_RELATED_BASE_NAME + "direction", db_comment="Направление",
     )
 
+    def __str__(self):
+        return f'{self.name}'
+
     class Meta:
         db_table_comment = "Обследование"
         verbose_name = "Обследование"
@@ -132,6 +141,9 @@ class ExaminationScheme(models.Model):
                                     related_name=_RELATED_BASE_NAME + "examination",
                                     db_comment="Обследование")
     scheme = models.JSONField(verbose_name="Схема обследования", db_comment="Схема обследования")
+
+    def __str__(self):
+        return f'{self.examination_id}'
 
     class Meta:
         db_table_comment = "Схема обследования"

@@ -153,6 +153,7 @@ class DistributionAge(BaseModel):
 class Distribution(BaseModel):
     date: date
     count_people: int = -1
+    region_code: int = -1
     distributions: list[DistributionAge]
 
 
@@ -171,7 +172,7 @@ class DataGenerator:
         return distribution
 
     def generate_population(self):
-        distribution = Distribution(**self.get_distribution_from_db())
+        distribution = Distribution(**self._get_distribution_from_db())
         for dist in distribution.distributions:
             result = {}
             dist = self._normalize_distribution(dist)
@@ -181,13 +182,9 @@ class DataGenerator:
                 else:
                     result['gender'] = 'woman'
                 delta = random.randrange(dist.age_start * 365, dist.age_finish * 365)
-                result['birthday'] = date(datetime.now(tz=timezone.utc) - timedelta(days=delta))
+                result['birthday'] = (datetime.now(tz=timezone.utc) - timedelta(days=delta)).date()
+                result['name'] = f'Житель-{distribution.region_code}-{dist.age_start}:{dist.age_finish}-{i + 1}'
                 yield result
 
 
 
-
-if __name__ == "__main__":
-  geterator = DataGenerator("45")
-  for pers in geterator.generate_population():
-    print(pers)

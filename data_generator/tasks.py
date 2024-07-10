@@ -178,12 +178,13 @@ class DataGenerator:
             dist = self._normalize_distribution(dist)
             for i in range(dist.man + dist.woman):
                 if i < dist.man:
-                    result['gender'] = 'man'
+                    result['gender'] = 'М'
                 else:
-                    result['gender'] = 'woman'
+                    result['gender'] = 'Ж'
                 delta = random.randrange(dist.age_start * 365, dist.age_finish * 365)
                 result['birthday'] = (datetime.now(tz=timezone.utc) - timedelta(days=delta)).date()
                 result['name'] = f'Житель-{distribution.region_code}-{dist.age_start}:{dist.age_finish}-{i + 1}'
+                result['region_id'] = distribution.region_code
                 yield result
 
 

@@ -70,10 +70,28 @@ class Person(models.Model):
         verbose_name_plural = "Граждане"
 
 
+class DiseaseCategory(models.Model):
+    name = models.CharField(max_length=200, verbose_name="Наименование", db_comment="Наименование")
+
+    def __str__(self):
+        return f'{self.name}({self.id})'
+
+    class Meta:
+        db_table_comment = "Категория заболевания"
+        verbose_name = "Категория заболевания"
+        verbose_name_plural = "Категории заболеваний"
+
+
 class Disease(models.Model):
     name = models.CharField(max_length=1000, verbose_name="Заболевание", db_comment="Заболевание",)
     direction = models.ForeignKey(to=Direction, on_delete=models.CASCADE,
-                                  verbose_name="Направление заболевания", db_comment="Направление заболевания")
+                                  verbose_name="Направление заболевания", db_comment="Направление заболевания",
+                                  related_name=_RELATED_BASE_NAME + "direction"
+                                  )
+    category = models.ForeignKey(
+        to=DiseaseCategory, on_delete=models.PROTECT, verbose_name="Категория", db_comment="Категория",
+        related_name=_RELATED_BASE_NAME + "category", null=True
+    )
 
     def __str__(self):
         return f'{self.name} - ({self.id})'

@@ -1,6 +1,10 @@
 from django.contrib import admin
 
-from health.models import Region, Person, DiseaseCategory, Disease, Direction, StageDisease, PersonDisease
+from health.models import (
+    Region, Person, DiseaseCategory, Disease, Direction, StageDisease, PersonDisease,
+    Examination, ExaminationScheme, ExaminationPlan, ExaminationFact
+)
+
 
 # Register your models here.
 @admin.register(Region)

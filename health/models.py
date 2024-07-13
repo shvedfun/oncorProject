@@ -139,11 +139,16 @@ class PersonDisease(models.Model):
 
 
 class Examination(models.Model):
-    name = models.CharField(max_length=1000, verbose_name="Обследование", db_comment="Обследование",)
-    direction = models.ForeignKey(
-        to=Direction, on_delete=models.CASCADE, verbose_name="Направление",
-        related_name=_RELATED_BASE_NAME + "direction", db_comment="Направление",
+    name = models.CharField(max_length=200, verbose_name="Обследование", db_comment="Обследование",)
+    disease = models.ForeignKey(
+        to=Disease,
+        on_delete=models.CASCADE,
+        verbose_name="Заболевание",
+        related_name=_RELATED_BASE_NAME + 'disease',
+        db_comment="Заболевание",
+        null=True
     )
+
 
     def __str__(self):
         return f'{self.name}'

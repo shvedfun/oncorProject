@@ -1,5 +1,6 @@
 from django.db import models
-
+from django.core.exceptions import ValidationError
+from django.utils.translation import gettext_lazy as _
 # Create your models here.
 
 
@@ -44,11 +45,22 @@ class StageDisease(models.Model):
 class GenderEnum(models.TextChoices):
     MAN = "М"
     WOMAN = "Ж"
+    ALL = "МЖ"
+
+    @classmethod
+    def only_m_w_validator(cls, value):
+        if value == cls.ALL:
+            raise ValidationError(
+                _("%(value)s не поддерживается для гражданина"),
+                params={"value": value},
+            )
+
 
 
 class Person(models.Model):
     name = models.CharField(max_length=200, verbose_name="ФИО", db_comment="ФИО")
-    gender = models.CharField(choices=GenderEnum.choices, max_length=1, verbose_name="Пол", db_comment="Пол")
+    gender = models.CharField(choices=GenderEnum.choices, max_length=2, verbose_name="Пол", db_comment="Пол",
+                              validators=[GenderEnum.only_m_w_validator])
     birthday = models.DateField(verbose_name="Дата рождения", db_comment="Дата рождения")
     diseases = models.ManyToManyField(
         to="Disease", blank=True,
@@ -91,6 +103,9 @@ class Disease(models.Model):
     category = models.ForeignKey(
         to=DiseaseCategory, on_delete=models.PROTECT, verbose_name="Категория", db_comment="Категория",
         related_name=_RELATED_BASE_NAME + "category", null=True
+    )
+    gender = models.CharField(
+        choices=GenderEnum.choices, max_length=2, verbose_name="Пол", db_comment="Пол", default=GenderEnum.ALL
     )
 
     def __str__(self):
@@ -138,6 +153,32 @@ class PersonDisease(models.Model):
         verbose_name_plural = "Заболевания граждан"
 
 
+class Procedure(models.Model):
+    name = models.CharField(max_length=100, verbose_name="Наименование", db_comment="Наименование")
+
+    def __str__(self):
+        return f'{self.name}({self.id})'
+
+    class Meta:
+        db_table_comment = "Процедура обследования"
+        verbose_name = "Процедура обследования"
+        verbose_name_plural = "Процедуры обследования"
+
+
+class Applicability(models.Model):
+    from_age = models.PositiveSmallIntegerField(verbose_name="Возраст начала обследования")
+    to_age = models.PositiveSmallIntegerField(verbose_name="Возраст окончания обследования")
+    periodicity = models.FloatField(verbose_name="период обследования в годах")
+
+    def __str__(self):
+        return f'С {self.from_age} до {self.to_age} лет. Периодичность раз в {self.periodicity} год(а).'
+
+    class Meta:
+        db_table_comment = "Применимость обследования"
+        verbose_name = "Применимость обследования"
+        verbose_name_plural = "Применимость обследований"
+
+
 class Examination(models.Model):
     name = models.CharField(max_length=200, verbose_name="Обследование", db_comment="Обследование",)
     disease = models.ForeignKey(
@@ -148,7 +189,14 @@ class Examination(models.Model):
         db_comment="Заболевание",
         null=True
     )
-
+    applicability = models.ForeignKey(
+        to=Applicability, on_delete=models.PROTECT, verbose_name="Применимость",
+        related_name=_RELATED_BASE_NAME + "applicability", db_comment="Применимость", null=True
+    )
+    procedure = models.ManyToManyField(to=Procedure, related_name=_RELATED_BASE_NAME + "procedure")
+    examination_scheme = models.JSONField(
+        verbose_name="Схема обследования", db_comment="Схема обследования", null=True
+    )
 
     def __str__(self):
         return f'{self.name}'

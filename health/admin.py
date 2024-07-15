@@ -2,11 +2,47 @@ from django.contrib import admin
 
 from health.models import (
     Region, Person, DiseaseCategory, Disease, Direction, StageDisease, PersonDisease,
-    Examination, ExaminationScheme, ExaminationPlan, ExaminationFact
+    Examination, ExaminationScheme, ExaminationPlan, ExaminationFact, Applicability,
+    Procedure
 )
 
 
 # Register your models here.
+@admin.register(Procedure)
+class ProcedureAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(Applicability)
+class ApplicabilityAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(ExaminationFact)
+class ExaminationFactAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(ExaminationPlan)
+class ExaminationPlanAdmin(admin.ModelAdmin):
+    exclude = ["examination",]
+
+    def get_queryset(self, request):
+        qs = super(ExaminationPlanAdmin, self).get_queryset(request)
+        qs = qs.select_related("examination", "person")
+        return qs
+
+
+@admin.register(ExaminationScheme)
+class ExaminationSchemeAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(Examination)
+class ExaminationAdmin(admin.ModelAdmin):
+    pass
+
+
 @admin.register(Region)
 class RegionAdmin(admin.ModelAdmin):
     ordering = ("code",)
@@ -17,6 +53,7 @@ class RegionAdmin(admin.ModelAdmin):
 class PersonAdmin(admin.ModelAdmin):
     pass
     list_filter = ('region__code',)
+    exclude = ["diseases"]
 
 
 @admin.register(DiseaseCategory)

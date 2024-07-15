@@ -178,6 +178,10 @@ class Applicability(models.Model):
         verbose_name = "Применимость обследования"
         verbose_name_plural = "Применимость обследований"
 
+        unique_together = [
+            ("from_age", "to_age", "periodicity")
+        ]
+
 
 class Examination(models.Model):
     name = models.CharField(max_length=200, verbose_name="Обследование", db_comment="Обследование",)
@@ -226,9 +230,12 @@ class ExaminationPlan(models.Model):
     person = models.ForeignKey(to=Person, on_delete=models.CASCADE, verbose_name="Гражданин",
                                related_name=_RELATED_BASE_NAME + "person",
                                db_comment="Гражданин",)
-    examination = models.ForeignKey(to=Examination, on_delete=models.CASCADE, verbose_name="Обследование",
-                                    related_name=_RELATED_BASE_NAME + "examination", db_comment="Обследование",)
-    date = models.DateField(verbose_name="Плановая дата обследования", db_comment="Плановая дата обследования")
+    examination = models.ForeignKey(
+        to=Examination, on_delete=models.CASCADE,
+        verbose_name="Обследование", related_name=_RELATED_BASE_NAME + "examination",
+        db_comment="Обследование",
+    )
+    date_on = models.DateField(verbose_name="Плановая дата обследования", db_comment="Плановая дата обследования")
 
     class Meta:
         db_table_comment = "План обследования"

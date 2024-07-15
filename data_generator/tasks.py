@@ -1,18 +1,21 @@
 import os
 import json
 import logging
+import traceback
 from datetime import datetime, timedelta, date
 import random
 from dateutil.relativedelta import relativedelta
 
 from django.db.models import QuerySet
+from django.db.transaction import atomic
 from django.utils import timezone
+
 
 from data_generator.models import PopulationDistribution
 from data_generator.data_scheme import Distribution, DistributionAge, \
     ExaminationScheme, DiseaseSchemas, DirectionScriningsSchemas, PersonExaminationPlan, ExaminationWithDate
 
-from health.models import Person
+from health.models import Person, Disease, Examination, ExaminationPlan, Procedure
 
 logger = logging.getLogger()
 
@@ -274,14 +277,24 @@ def task_generate_examinations(region_ids: list):
             generator = ExaminationPlanGenerator(person_queryset=persons_qs, schemas=schemas)
             for pers in generator.generate_by_person(date.fromisoformat("2024-07-01")):
                 logger.debug(pers)
-            #     person = Person(**pers)
-            #     persons.append(person)
-            #     if len(persons) >= 100:
-            #         Person.objects.bulk_create(persons)
-            #         persons = []
-            # if persons:
-            #     Person.objects.bulk_create(persons)
-            #
+                with atomic():
+                    add2plan = []
+                    person_id = pers.person_id
+                    for examination in pers.plan:
+                        try:
+                            logger.debug(f'examination = {examination}')
+                            disease = Disease.objects.get(name__iexact=examination.disease)
+                            exam = Examination.objects.get(disease_id=disease.id)
+                            ex_plan = ExaminationPlan(person_id=person_id, examination=exam, date=examination.date)
+                            add2plan.append(ex_plan)
+                        except Exception as e:
+                            logger.error(f'Error = {e} : {traceback.format_exc()}')
+                    ExaminationPlan.objects.bulk_create(add2plan)
+
+
+
+
+
         except Exception as e:
             raise e
 

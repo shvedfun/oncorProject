@@ -157,7 +157,7 @@ class Procedure(models.Model):
     name = models.CharField(max_length=100, verbose_name="Наименование", db_comment="Наименование")
 
     def __str__(self):
-        return f'{self.name}({self.id})'
+        return f'{self.name} ({self.id})'
 
     class Meta:
         db_table_comment = "Процедура обследования"

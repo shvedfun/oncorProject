@@ -25,7 +25,8 @@ class ExaminationFactAdmin(admin.ModelAdmin):
 
 @admin.register(ExaminationPlan)
 class ExaminationPlanAdmin(admin.ModelAdmin):
-    exclude = ["examination",]
+    readonly_fields = ["person", "examination",]
+    list_display = ["person", "examination", "date_on"]
 
     def get_queryset(self, request):
         qs = super(ExaminationPlanAdmin, self).get_queryset(request)

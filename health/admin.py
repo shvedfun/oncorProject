@@ -3,7 +3,7 @@ from django.contrib import admin
 from health.models import (
     Region, Person, DiseaseCategory, Disease, Direction, StageDisease, PersonDisease,
     Examination, ExaminationScheme, ExaminationPlan, ExaminationFact, Applicability,
-    Procedure
+    Procedure, RegionDirectionGenerateData
 )
 
 
@@ -22,10 +22,15 @@ class ApplicabilityAdmin(admin.ModelAdmin):
 class ExaminationFactAdmin(admin.ModelAdmin):
     pass
 
+    def get_queryset(self, request):
+        qs = super(ExaminationFactAdmin, self).get_queryset(request)
+        qs = qs.select_related("examination", "person")
+        return qs
+
 
 @admin.register(ExaminationPlan)
 class ExaminationPlanAdmin(admin.ModelAdmin):
-    readonly_fields = ["person", "examination",]
+    readonly_fields = ["person", "examination", ]
     list_display = ["person", "examination", "date_on"]
 
     def get_queryset(self, request):
@@ -66,14 +71,26 @@ class DiseaseCategoryAdmin(admin.ModelAdmin):
 class DiseaseAdmin(admin.ModelAdmin):
     pass
 
+
 @admin.register(Direction)
 class DirectionAdmin(admin.ModelAdmin):
     pass
+
 
 @admin.register(StageDisease)
 class StageDiseaseAdmin(admin.ModelAdmin):
     pass
 
+
 @admin.register(PersonDisease)
 class PersonDiseaseAdmin(admin.ModelAdmin):
     pass
+
+
+@admin.register(RegionDirectionGenerateData)
+class RegionDirectionGenerateData(admin.ModelAdmin):
+
+    def get_queryset(self, request):
+        qs = super(RegionDirectionGenerateData, self).get_queryset(request)
+        qs = qs.select_related("region", "direction")
+        return qs

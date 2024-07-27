@@ -56,7 +56,6 @@ class GenderEnum(models.TextChoices):
             )
 
 
-
 class Person(models.Model):
     name = models.CharField(max_length=200, verbose_name="ФИО", db_comment="ФИО")
     gender = models.CharField(choices=GenderEnum.choices, max_length=2, verbose_name="Пол", db_comment="Пол",
@@ -260,3 +259,24 @@ class ExaminationFact(models.Model):
         verbose_name = "Проведенное обследование"
         verbose_name_plural = "Проведенные обследования"
 
+
+class GenerateDataType(models.TextChoices):
+    population = "population"
+    plan = "plan"
+    fact = "fact"
+
+
+class RegionDirectionGenerateData(models.Model):
+    region = models.ForeignKey(
+        to=Region, on_delete=models.CASCADE, verbose_name="Регион", related_name=_RELATED_BASE_NAME + "region"
+    )
+    direction = models.ForeignKey(
+        to=Direction, on_delete=models.CASCADE, verbose_name="Направление медицины",
+        related_name=_RELATED_BASE_NAME + "direction"
+    )
+    date = models.DateTimeField(verbose_name="Дата")
+    type = models.CharField(
+        choices=GenerateDataType.choices, max_length=10, verbose_name="Тип"
+    )
+    is_active = models.BooleanField(verbose_name="Активна", default=False)
+    data = models.JSONField(verbose_name="Данные")

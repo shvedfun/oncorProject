@@ -3,7 +3,7 @@ from django.contrib import admin
 from health.models import (
     Region, Person, DiseaseCategory, Disease, Direction, StageDisease, PersonDisease,
     Examination, ExaminationScheme, ExaminationPlan, ExaminationFact, Applicability,
-    Procedure, RegionDirectionGenerateData
+    Procedure
 )
 
 
@@ -87,10 +87,3 @@ class PersonDiseaseAdmin(admin.ModelAdmin):
     pass
 
 
-@admin.register(RegionDirectionGenerateData)
-class RegionDirectionGenerateData(admin.ModelAdmin):
-
-    def get_queryset(self, request):
-        qs = super(RegionDirectionGenerateData, self).get_queryset(request)
-        qs = qs.select_related("region", "direction")
-        return qs

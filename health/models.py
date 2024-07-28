@@ -260,31 +260,3 @@ class ExaminationFact(models.Model):
         verbose_name_plural = "Проведенные обследования"
 
 
-class GenerateDataType(models.TextChoices):
-    population = "population"
-    plan = "plan"
-    fact = "fact"
-
-
-class RegionDirectionGenerateData(models.Model):
-    region = models.ForeignKey(
-        to=Region, on_delete=models.CASCADE, verbose_name="Регион", null=True,
-        related_name=_RELATED_BASE_NAME + "region",
-    )
-    direction = models.ForeignKey(
-        to=Direction, on_delete=models.CASCADE, verbose_name="Направление медицины",
-        related_name=_RELATED_BASE_NAME + "direction", null=True
-    )
-    date = models.DateTimeField(verbose_name="Дата")
-    type = models.CharField(
-        choices=GenerateDataType.choices, max_length=10, verbose_name="Тип"
-    )
-    is_active = models.BooleanField(verbose_name="Активна", default=False)
-    data = models.JSONField(verbose_name="Данные")
-
-    class Meta:
-        verbose_name = "Данные для генерации распределений"
-        verbose_name_plural = "Данные для генерации распределений"
-
-    def __str__(self):
-        return "{region} / {direction} / {type}".format(region=self.region, direction=self.direction, type=self.type)

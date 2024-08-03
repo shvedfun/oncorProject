@@ -1,6 +1,6 @@
-from datetime import date
+from datetime import date, datetime
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 
 
 class DistributionAge(BaseModel):
@@ -16,24 +16,24 @@ class Distribution(BaseModel):
     date: date
     count_people: int = -1
     region_code: int = -1
-    distributions: list[DistributionAge]
+    distributions: List[DistributionAge]
 
 
 class ExaminationScheme(BaseModel):
     gender: str
-    age: list[int]
+    age: List[int]
     periodicity: float
     examination: str
 
 
 class DiseaseSchemas(BaseModel):
     disease: str
-    schemas: list[ExaminationScheme]
+    schemas: List[ExaminationScheme]
 
 
 class DirectionScriningsSchemas(BaseModel):
     direction: str
-    scrinings: list[dict]
+    scrinings: List[dict]
 
 
 class ExaminationWithDate(BaseModel):
@@ -44,5 +44,24 @@ class ExaminationWithDate(BaseModel):
 
 class PersonExaminationPlan(BaseModel):
     person_id: int
-    plan: list[ExaminationWithDate]
+    plan: List[ExaminationWithDate]
 
+
+class FactFactor(BaseModel):
+    disease: str
+    man: Optional[float] = -1.0
+    woman: Optional[float] = -1.0
+
+
+class FactDistribution(BaseModel):
+    age_start: int = None
+    age_finish: int =None
+    factors: Optional[List[FactFactor]] = []
+
+
+class Scheme4FactGenerator(BaseModel):
+    region_code: int
+    date: date
+    direction: str
+    year: Optional[int] = -1
+    distributions: List[FactDistribution]

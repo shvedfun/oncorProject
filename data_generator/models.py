@@ -29,7 +29,8 @@ class RegionDirectionGenerateData(models.Model):
         to=Direction, on_delete=models.CASCADE, verbose_name="Направление медицины",
         related_name=_RELATED_BASE_NAME + "direction", null=True, blank=True
     )
-    date = models.DateTimeField(verbose_name="Дата")
+    load_date = models.DateTimeField(verbose_name="Дата")
+    year = models.PositiveIntegerField(verbose_name="Год", null=True)
     type = models.CharField(
         choices=GenerateDataType.choices, max_length=10, verbose_name="Тип"
     )

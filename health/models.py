@@ -1,6 +1,8 @@
+from datetime import date, timedelta
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
+from django.utils import timezone
 # Create your models here.
 
 
@@ -71,6 +73,17 @@ class Person(models.Model):
         to=Region, on_delete=models.CASCADE, verbose_name="Регион",
         related_name=_RELATED_BASE_NAME + "region", db_comment="Регион", null=True
     )
+
+    def age(self, to_date: date = None):
+        if to_date is None:
+            to_date = timezone.now()
+        delta = to_date - self.birthday
+        return self.get_years(delta)
+
+    @staticmethod
+    def get_years(tmdlt: timedelta) -> int:
+        return tmdlt // timedelta(days=365.25)
+
 
     def __str__(self):
         return f'{self.name} ({self.id})'

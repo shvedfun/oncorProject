@@ -2,155 +2,26 @@ import os
 import json
 import logging
 import traceback
-from datetime import datetime, timedelta, date
+from datetime import timedelta, date
 import random
 from dateutil.relativedelta import relativedelta
+from typing import List
 
-from django.db.models import QuerySet
+from django.db.models import QuerySet, F, ExpressionWrapper, DurationField
+from django.db.models.functions import ExtractYear, Coalesce
 from django.db.transaction import atomic
 from django.utils import timezone
 
 
-from data_generator.models import PopulationDistribution
-from data_generator.data_scheme import Distribution, DistributionAge, \
-    ExaminationScheme, DiseaseSchemas, DirectionScriningsSchemas, PersonExaminationPlan, ExaminationWithDate
+from data_generator.models import PopulationDistribution, RegionDirectionGenerateData, GenerateDataType
+from data_generator.data_scheme import (
+    Distribution, DistributionAge, ExaminationScheme, DiseaseSchemas, DirectionScriningsSchemas,
+    PersonExaminationPlan, ExaminationWithDate, Scheme4FactGenerator, FactDistribution
+)
 
-from health.models import Person, Disease, Examination, ExaminationPlan, Procedure
+from health.models import Person, Disease, Examination, ExaminationPlan, ExaminationFact, Direction, GenderEnum
 
 logger = logging.getLogger()
-
-# distribution4del = {
-#   "region_code": 45,
-#   "date": "2023-01-01",
-#   "distributions": [
-#     {
-#       "age_start": 0,
-#       "age_finish": 4,
-#       "man": 19088,
-#       "woman": 17719
-#     },
-#     {
-#       "age_start": 5,
-#       "age_finish": 9,
-#       "man": 26996,
-#       "woman": 26117
-#     },
-#     {
-#       "age_start": 10,
-#       "age_finish": 14,
-#       "man": 26581,
-#       "woman": 24702
-#     },
-#     {
-#       "age_start": 15,
-#       "age_finish": 19,
-#       "man": 20668,
-#       "woman": 20381
-#     },
-#     {
-#       "age_start": 20,
-#       "age_finish": 24,
-#       "man": 16057,
-#       "woman": 15891
-#     },
-#     {
-#       "age_start": 25,
-#       "age_finish": 29,
-#       "man": 14625,
-#       "woman": 13777
-#     },
-#     {
-#       "age_start": 30,
-#       "age_finish": 34,
-#       "man": 22842,
-#       "woman": 22262
-#     },
-#     {
-#       "age_start": 35,
-#       "age_finish": 39,
-#       "man": 28469,
-#       "woman": 28294
-#     },
-#     {
-#       "age_start": 40,
-#       "age_finish": 44,
-#       "man": 25478,
-#       "woman": 27942
-#     },
-#     {
-#       "age_start": 45,
-#       "age_finish": 49,
-#       "man": 24097,
-#       "woman": 27895
-#     },
-#     {
-#       "age_start": 50,
-#       "age_finish": 54,
-#       "man": 22299,
-#       "woman": 26232
-#     },
-#     {
-#       "age_start": 55,
-#       "age_finish": 59,
-#       "man": 21975,
-#       "woman": 28032
-#     },
-#     {
-#       "age_start": 60,
-#       "age_finish": 64,
-#       "man": 26976,
-#       "woman": 36155
-#     },
-#     {
-#       "age_start": 65,
-#       "age_finish": 69,
-#       "man": 22524,
-#       "woman": 35029
-#     },
-#     {
-#       "age_start": 70,
-#       "age_finish": 74,
-#       "man": 15504,
-#       "woman": 28535
-#     },
-#     {
-#       "age_start": 75,
-#       "age_finish": 79,
-#       "man": 5355,
-#       "woman": 12361
-#     },
-#     {
-#       "age_start": 80,
-#       "age_finish": 84,
-#       "man": 4191,
-#       "woman": 14406
-#     },
-#     {
-#       "age_start": 85,
-#       "age_finish": 89,
-#       "man": 1780,
-#       "woman": 6858
-#     },
-#     {
-#       "age_start": 90,
-#       "age_finish": 94,
-#       "man": 529,
-#       "woman": 2417
-#     },
-#     {
-#       "age_start": 95,
-#       "age_finish": 99,
-#       "man": 74,
-#       "woman": 505
-#     },
-#     {
-#       "age_start": 100,
-#       "age_finish": 104,
-#       "man": 3,
-#       "woman": 37
-#     }
-#   ]
-# }
 
 
 class PopulationDataGenerator:
@@ -215,11 +86,10 @@ class ExaminationPlanGenerator:
         self.schemas = schemas
         self.plan_horizont = plan_horizont
 
-    def get_years(self, tmdlt: timedelta) -> int:
-        return tmdlt // timedelta(days=365.25)
 
     def get_examinations_to_person(self, person: Person, target_date: date) -> list[ExaminationWithDate]:
         result = []
+        age = person.age(target_date)
         for scrinings in self.schemas.scrinings:
             # logger.debug(f'scrinings = {scrinings}')
             scrinings = DiseaseSchemas(**scrinings)
@@ -230,15 +100,16 @@ class ExaminationPlanGenerator:
                         scrining.gender == 'all' or scrining.gender == person.gender
                 ):
                     if (
-                            (person.age + self.plan_horizont) >= scrining.age[0] and (person.age < scrining.age[1])
+                            (age + self.plan_horizont) >=
+                            scrining.age[0] and (age < scrining.age[1])
                     ):
                         for add_year in range(self.plan_horizont):
                             logger.debug(f'add_year = {add_year}')
-                            if (person.age + add_year >= scrining.age[0]) \
-                                    and (person.age + add_year < scrining.age[1]) \
-                                    and ((person.age + add_year - scrining.age[0]) % scrining.periodicity == 0):
+                            if (age + add_year >= scrining.age[0]) \
+                                    and (age + add_year < scrining.age[1]) \
+                                    and ((age + add_year - scrining.age[0]) % scrining.periodicity == 0):
                                 new_ex_plan = ExaminationWithDate(
-                                    date=person.birthday + relativedelta(years=person.age + add_year),
+                                    date=person.birthday + relativedelta(years=age + add_year),
                                     disease=scrinings.disease,
                                     examination=scrining.examination
                                 )
@@ -247,11 +118,9 @@ class ExaminationPlanGenerator:
         return result
 
     def generate_by_person(self, target_date: date):
-        for person in self.queryset[:100]: #.prefetch_related("examination_plan_from_person")
+        for person in self.queryset.iterator(chunk_size=100): #.prefetch_related("examination_plan_from_person")
             logger.debug(f'person = {person}')
             person: Person = person
-            person.age = self.get_years(target_date - person.birthday)  # TODO
-            logger.debug(f'person_age = {person.age}')
             result = PersonExaminationPlan(person_id=person.id, plan=[])
             result.plan = self.get_examinations_to_person(person, target_date)
             if result.plan:
@@ -291,16 +160,93 @@ def task_generate_examinations(region_ids: list):
                             logger.error(f'Error = {e} : {traceback.format_exc()}')
                     ExaminationPlan.objects.bulk_create(add2plan)
 
-
-
-
-
         except Exception as e:
             raise e
 
 
+class ExaminationFactGenerator:
+
+    def __init__(self, region_id: int, year: int, direction_id: int = None):
+        self.region_id = region_id
+        self.year = year
+        self.direction_id = direction_id
+
+    def get_json4generation(self) -> List[Scheme4FactGenerator]:
+        datas = RegionDirectionGenerateData.objects.filter(
+            is_active=True, region_id=self.region_id, year=self.year, type=GenerateDataType.fact
+        ).order_by("-load_date")
+
+        if self.direction_id is not None:
+            datas = datas.filter(direction_id=self.direction_id)
+
+        results = []
+        for dt in datas.iterator():
+            result = Scheme4FactGenerator(**dt.data)
+            results.append(result)
+        return results
+
+    def _generate_fact_by_plan(self, qs_in, factor):
+        logger.debug(f'qs = {qs_in.query}')
+        results = qs_in.values_list("person_id", flat=True)
+        k = int(qs_in.count() * factor)
+        results = random.sample(results, k=k)
+        for plan in qs_in.filter(person_id__in=results):
+            fact = ExaminationFact.objects.create(
+                person_id=plan.person_id, examination_id=plan.examination_id,
+                date=plan.date_on, examination_plan_id=plan.id
+            )
+            logger.debug(f'create fact = {fact}')
 
 
+    def _generate_fact_by_distribution(self, qs_in: QuerySet, distribution: FactDistribution):
+        qs_common = qs_in.filter(
+            old__gte=distribution.age_start,
+            old__lte=distribution.age_finish
+        )
+        for factor in distribution.factors:
+            qs_disease = qs_common.filter(examination__disease__name__iexact=factor.disease)
+            if factor.man > 0:
+                self._generate_fact_by_plan(qs_disease.filter(person__gender=GenderEnum.MAN), factor.man)
+            if factor.woman > 0:
+                self._generate_fact_by_plan(qs_disease.filter(person__gender=GenderEnum.MAN), factor.woman)
+
+    def _generate_fact_by_fullscheme(self, scheme4fact: Scheme4FactGenerator):
+        direction_id = Direction.objects.get(name__iexact=scheme4fact.direction)
+        logger.debug(f'scheme4fact = {scheme4fact}')
+        ExaminationFact.objects.filter(
+            person__region_id=str(scheme4fact.region_code),
+            examination__disease__direction_id=direction_id,
+            date__gte=date(scheme4fact.year, 1, 1),
+            date__lte=date(scheme4fact.year, 12, 31)
+        ).delete()
+
+        qs = ExaminationPlan.objects.select_related(
+            "examination__disease__direction", "person"
+        ).filter(
+            person__region_id=str(scheme4fact.region_code),
+            examination__disease__direction_id=direction_id,
+            date_on__gte=date(scheme4fact.year, 1, 1),
+            date_on__lte=date(scheme4fact.year, 12, 31)
+        ).annotate(
+            old=ExtractYear(
+                Coalesce(
+                    ExpressionWrapper(F("date_on") - F("person__birthday"), output_field=DurationField()),
+                    DurationField(0)
+                )
+            ) # ExtractYear(
+        )
+
+        for dist in scheme4fact.distributions:
+            logger.debug(f'dist = {dist}')
+            self._generate_fact_by_distribution(qs, dist)
+
+
+    def generate_fact(self):
+        scheme4facts = self.get_json4generation()
+        for scheme4fact in scheme4facts:
+            if scheme4fact.year <=0:
+                scheme4fact.year = self.year
+            self._generate_fact_by_fullscheme(scheme4fact)
 
 
 

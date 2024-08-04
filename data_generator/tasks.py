@@ -1,3 +1,4 @@
+import datetime
 import os
 import json
 import logging
@@ -145,17 +146,27 @@ def task_generate_examinations(region_ids: list):
             schemas = DirectionScriningsSchemas(**schemas)
             generator = ExaminationPlanGenerator(person_queryset=persons_qs, schemas=schemas)
             for pers in generator.generate_by_person(date.fromisoformat("2024-07-01")):
-                logger.debug(pers)
+                logger.debug(f'pers = {pers}')
                 with atomic():
+                    person = Person.objects.get(pk=pers.person_id)
+                    ExaminationPlan.objects.filter(person_id=person.id).delete()
                     add2plan = []
-                    person_id = pers.person_id
                     for examination in pers.plan:
                         try:
                             logger.debug(f'examination = {examination}')
                             disease = Disease.objects.get(name__iexact=examination.disease)
-                            exam = Examination.objects.get(disease_id=disease.id)
-                            ex_plan = ExaminationPlan(person_id=person_id, examination=exam, date=examination.date)
-                            add2plan.append(ex_plan)
+
+                            age = examination.date.year - person.birthday.year
+                            exam = Examination.objects.filter(
+                                disease_id=disease.id,
+                                applicability__from_age__gte=age,
+                                applicability__to_age__lte=age
+                            ).first()
+                            if exam:
+                                ex_plan = ExaminationPlan(
+                                    person_id=person.id, examination=exam, date_on=examination.date
+                                )
+                                add2plan.append(ex_plan)
                         except Exception as e:
                             logger.error(f'Error = {e} : {traceback.format_exc()}')
                     ExaminationPlan.objects.bulk_create(add2plan)
@@ -186,16 +197,23 @@ class ExaminationFactGenerator:
         return results
 
     def _generate_fact_by_plan(self, qs_in, factor):
-        logger.debug(f'qs = {qs_in.query}')
+        # logger.debug(f'qs = {qs_in.values()[:3]}')
         results = qs_in.values_list("person_id", flat=True)
-        k = int(qs_in.count() * factor)
+        results = list(results)
+        # logger.debug(f'len(results) = {len(results)}')
+        k = int(len(results) * factor)
         results = random.sample(results, k=k)
+        # logger.debug(f'len(results) = {len(results)}')
+        saveed_n = 0
         for plan in qs_in.filter(person_id__in=results):
-            fact = ExaminationFact.objects.create(
+            if saveed_n == 0:
+                logger.debug(f'plan = {plan.examination.disease.name}')
+            ExaminationFact.objects.create(
                 person_id=plan.person_id, examination_id=plan.examination_id,
                 date=plan.date_on, examination_plan_id=plan.id
             )
-            logger.debug(f'create fact = {fact}')
+            saveed_n += 1
+        logger.debug(f'create fact from plan N = {saveed_n}')
 
 
     def _generate_fact_by_distribution(self, qs_in: QuerySet, distribution: FactDistribution):
@@ -203,16 +221,23 @@ class ExaminationFactGenerator:
             old__gte=distribution.age_start,
             old__lte=distribution.age_finish
         )
+        # logger.debug(f'qs_common[:3] = {qs_common.values()[:3]}')
         for factor in distribution.factors:
-            qs_disease = qs_common.filter(examination__disease__name__iexact=factor.disease)
+            disease_id = Disease.objects.get(name__iexact=factor.disease)
+            qs_disease = qs_common.filter(examination__disease_id=disease_id)
+            # logger.debug(f'qs_disease[] = {qs_disease.values()[:3]}')
             if factor.man > 0:
-                self._generate_fact_by_plan(qs_disease.filter(person__gender=GenderEnum.MAN), factor.man)
+                qs_man = qs_disease.filter(person__gender=GenderEnum.MAN)
+                # logger.debug(f'qs_man[] = {qs_man.values()[:3]}')
+                self._generate_fact_by_plan(qs_man, factor.man)
             if factor.woman > 0:
-                self._generate_fact_by_plan(qs_disease.filter(person__gender=GenderEnum.MAN), factor.woman)
+                qs_woman = qs_disease.filter(person__gender=GenderEnum.WOMAN)
+                # logger.debug(f'qs_woman[] = {qs_woman.values()[:3]}')
+                self._generate_fact_by_plan(qs_woman, factor.woman)
 
     def _generate_fact_by_fullscheme(self, scheme4fact: Scheme4FactGenerator):
         direction_id = Direction.objects.get(name__iexact=scheme4fact.direction)
-        logger.debug(f'scheme4fact = {scheme4fact}')
+        # logger.debug(f'scheme4fact = {scheme4fact}')
         ExaminationFact.objects.filter(
             person__region_id=str(scheme4fact.region_code),
             examination__disease__direction_id=direction_id,
@@ -223,21 +248,22 @@ class ExaminationFactGenerator:
         qs = ExaminationPlan.objects.select_related(
             "examination__disease__direction", "person"
         ).filter(
-            person__region_id=str(scheme4fact.region_code),
+            person__region__code=str(scheme4fact.region_code),
             examination__disease__direction_id=direction_id,
             date_on__gte=date(scheme4fact.year, 1, 1),
             date_on__lte=date(scheme4fact.year, 12, 31)
         ).annotate(
-            old=ExtractYear(
-                Coalesce(
-                    ExpressionWrapper(F("date_on") - F("person__birthday"), output_field=DurationField()),
-                    DurationField(0)
-                )
-            ) # ExtractYear(
+            old = ExtractYear("date_on") - ExtractYear("person__birthday")
+            # old=ExtractYear(
+            #     ExpressionWrapper(
+            #         Coalesce((F("date_on") - F("person__birthday")), datetime.timedelta(days=1)),
+            #         output_field=DurationField
+            #     )
+            # ) # ExtractYear(
         )
-
+        logger.debug(f'gs[:3] = {qs.values()[:3]}')
         for dist in scheme4fact.distributions:
-            logger.debug(f'dist = {dist}')
+            # logger.debug(f'dist = {dist}')
             self._generate_fact_by_distribution(qs, dist)
 
 

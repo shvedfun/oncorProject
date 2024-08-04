@@ -261,7 +261,7 @@ class ExaminationFact(models.Model):
     examination = models.ForeignKey(to=Examination, on_delete=models.CASCADE, verbose_name="Обследование",
                                     related_name=_RELATED_BASE_NAME + "examination", db_comment="Обследование")
     date = models.DateField(verbose_name="Фактическая дата обследования", db_comment="Фактическая дата обследования")
-    examination_plan = models.ForeignKey(to=ExaminationPlan, on_delete=models.CASCADE,
+    examination_plan = models.ForeignKey(to=ExaminationPlan, on_delete=models.SET_NULL,
                                          verbose_name="Плановое обследование",
                                          related_name=_RELATED_BASE_NAME + "examination_plan",
                                          null=True, blank=True,

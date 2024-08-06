@@ -95,7 +95,7 @@ class ExaminationPlanGenerator:
             # logger.debug(f'scrinings = {scrinings}')
             scrinings = DiseaseSchemas(**scrinings)
             for scrining in scrinings.schemas:
-                logger.debug(f'scrining = {scrining}')
+                # logger.debug(f'scrining = {scrining}')
                 scrining: ExaminationScheme = scrining
                 if (
                         scrining.gender == 'all' or scrining.gender == person.gender
@@ -105,7 +105,7 @@ class ExaminationPlanGenerator:
                             scrining.age[0] and (age < scrining.age[1])
                     ):
                         for add_year in range(self.plan_horizont):
-                            logger.debug(f'add_year = {add_year}')
+                            # logger.debug(f'add_year = {add_year}')
                             if (age + add_year >= scrining.age[0]) \
                                     and (age + add_year < scrining.age[1]) \
                                     and ((age + add_year - scrining.age[0]) % scrining.periodicity == 0):
@@ -120,7 +120,7 @@ class ExaminationPlanGenerator:
 
     def generate_by_person(self, target_date: date):
         for person in self.queryset.iterator(chunk_size=100): #.prefetch_related("examination_plan_from_person")
-            logger.debug(f'person = {person}')
+            # logger.debug(f'person = {person}')
             person: Person = person
             result = PersonExaminationPlan(person_id=person.id, plan=[])
             result.plan = self.get_examinations_to_person(person, target_date)
@@ -131,45 +131,49 @@ class ExaminationPlanGenerator:
 def task_generate_examinations(region_ids: list):
     for region_id in region_ids:
         try:
-            # delete region population
-            persons_qs = Person.objects.filter(region_id=region_id).order_by(
-                '-id'
-            ).filter(
-                birthday__gt=timezone.now() - timedelta(days=365.25 * 50),
-                birthday__lt=timezone.now() - timedelta(days=365.25 * 45)
-            )
-            # Create region population
-            persons = []
-            logger.debug(f'cur wd = {os.getcwd()}')
-            with open(os.getcwd() + "\\data_generator\\scrinning.json", mode="r", encoding="utf-8") as f:
-                schemas = json.loads(f.read())
-            schemas = DirectionScriningsSchemas(**schemas)
-            generator = ExaminationPlanGenerator(person_queryset=persons_qs, schemas=schemas)
-            for pers in generator.generate_by_person(date.fromisoformat("2024-07-01")):
-                logger.debug(f'pers = {pers}')
-                with atomic():
-                    person = Person.objects.get(pk=pers.person_id)
-                    ExaminationPlan.objects.filter(person_id=person.id).delete()
-                    add2plan = []
-                    for examination in pers.plan:
-                        try:
-                            logger.debug(f'examination = {examination}')
-                            disease = Disease.objects.get(name__iexact=examination.disease)
+            #
+            persons_qs = Person.objects.filter(region_id=region_id).order_by('id')
 
-                            age = examination.date.year - person.birthday.year
-                            exam = Examination.objects.filter(
-                                disease_id=disease.id,
-                                applicability__from_age__gte=age,
-                                applicability__to_age__lte=age
-                            ).first()
-                            if exam:
-                                ex_plan = ExaminationPlan(
-                                    person_id=person.id, examination=exam, date_on=examination.date
-                                )
-                                add2plan.append(ex_plan)
-                        except Exception as e:
-                            logger.error(f'Error = {e} : {traceback.format_exc()}')
-                    ExaminationPlan.objects.bulk_create(add2plan)
+            qs = RegionDirectionGenerateData.objects.filter(
+                region_id=region_id,
+                type=GenerateDataType.plan
+            ).order_by('-load_date')
+
+            for direction in Direction.objects.all():
+                logger.debug(f'Обрабатываю направление: {direction}')
+                row = qs.filter(direction_id=direction.id).first()
+                if row:
+                    schemas = row.data
+                    # with open(os.getcwd() + "\\data_generator\\scrinning.json", mode="r", encoding="utf-8") as f:
+                    #     schemas = json.loads(f.read())
+                    schemas = DirectionScriningsSchemas(**schemas)
+                    generator = ExaminationPlanGenerator(person_queryset=persons_qs, schemas=schemas)
+                    for pers in generator.generate_by_person(date.fromisoformat("2024-07-01")):
+                        logger.debug(f'pers = {pers}')
+                        with atomic():
+                            person = Person.objects.get(pk=pers.person_id)
+                            # delete exam plan for person
+                            ExaminationPlan.objects.filter(person_id=person.id).delete()
+                            add2plan = []
+                            for examination in pers.plan:
+                                try:
+                                    # logger.debug(f'examination = {examination}')
+                                    disease = Disease.objects.get(name__iexact=examination.disease)
+                                    age = examination.date.year - person.birthday.year
+                                    exam = Examination.objects.filter(
+                                        disease_id=disease.id,
+                                        applicability__from_age__lte=age,
+                                        applicability__to_age__gte=age
+                                    ).first()
+                                    if exam:
+                                        ex_plan = ExaminationPlan(
+                                            person_id=person.id, examination=exam, date_on=examination.date
+                                        )
+                                        logger.debug(f'add ex_plan {ex_plan}, age = {age}')
+                                        add2plan.append(ex_plan)
+                                except Exception as e:
+                                    logger.error(f'Error = {e} : {traceback.format_exc()}')
+                            ExaminationPlan.objects.bulk_create(add2plan)
 
         except Exception as e:
             raise e

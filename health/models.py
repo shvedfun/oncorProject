@@ -254,6 +254,9 @@ class ExaminationPlan(models.Model):
         verbose_name = "План обследования"
         verbose_name_plural = "Планы обследований"
 
+    def __str__(self):
+        return f'({self.id}) date={self.date_on} person_id={self.person_id}, exam_id={self.examination_id} '
+
 
 class ExaminationFact(models.Model):
     person = models.ForeignKey(to=Person, on_delete=models.CASCADE, verbose_name="Гражданин",

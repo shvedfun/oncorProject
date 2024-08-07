@@ -196,6 +196,7 @@ class ExaminationFactGenerator:
 
         results = []
         for dt in datas.iterator():
+            logger.debug(f'data = {dt}')
             result = Scheme4FactGenerator(**dt.data)
             results.append(result)
         return results

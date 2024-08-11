@@ -11,3 +11,7 @@ class DefaultView(generic.ListView):
     template_name = "health/charts.html"
     model = ExaminationPlan
 
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(object_list=None, **kwargs)
+        context['iam'] = "I am good"
+        return context

@@ -2,12 +2,12 @@
 <html lang="en">
 <>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Статистика</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.2.1/dist/chart.umd.min.js"></script>
     <script
-        src="https://code.jquery.com/jquery-3.6.4.min.js"
-        integrity="sha256-oP6HI9z1XaZNBrJURtCoUT5SUnxFr8s3BzRl+cbzUq8="
-        crossorigin="anonymous">
-    </script>
+            src="https://code.jquery.com/jquery-3.6.4.min.js"
+            integrity="sha256-oP6HI9z1XaZNBrJURtCoUT5SUnxFr8s3BzRl+cbzUq8="
+            crossorigin="anonymous"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-v4-grid-only@1.0.0/dist/bootstrap-grid.min.css">>
 </head>
     <body>
@@ -45,7 +45,7 @@
                             url: "/health/filter-options/",
                             type: "GET",
                             dataType: "json",
-                            success: (jsonResponse) +> {
+                            success: (jsonResponse) => {
                                 jsonResponse.options.forEach(option => {
                                     $("#year").append(new Option(option, option));
                                 });
@@ -71,7 +71,7 @@
                     dataType: "json",
                     success: (jsonResponse) => {
                         const title = jsonResponse.title;
-                        const label = jsonResponse.data.labels;
+                        const labels = jsonResponse.data.labels;
                         const datasets = jsonResponse.data.datasets;
 
                         // Reset the current chart
@@ -92,7 +92,7 @@
             }
 
             function loadAllCharts(year) {
-                loadChart(healthChart, '/health/health-chart/${year}/');
+                loadChart(healthChart, `/health/health-chart/${year}/`);
             }
         </script>
     </body>

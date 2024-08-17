@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'health',
     'data_generator',
+    'django_filters',
 ]
 
 MIDDLEWARE = [

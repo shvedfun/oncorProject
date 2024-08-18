@@ -15,16 +15,25 @@
     <body>
         <div class="container">
             <form id="filterForm">
-                <label for="year">Choose a year:</label>
+                <label for="year">Выберите год:</label>
                 <select name="year" id="year" multiple></select>
-                <input type="submit" value="Load" name="_load">
+                <label for="direction">Выберите направление:</label>
+                <select name="direction" id="direction" multiple></select>
+                <label for="disease">Выберите заболевание:</label>
+                <select name="disease" id="disease" multiple></select>
+                <input type="submit" value="Выбрать" name="_load">
             </form>
             <div class="row">
                 <div class="col-6">
-                  <canvas id="healthPlanChart" width="500" height="500"></canvas>
+                  <canvas id="healthPlanFactChart" width="500" height="300"></canvas>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-6">
+                  <canvas id="healthPlanChart" width="500" height="300"></canvas>
                 </div>
                 <div class="col-6">
-                  <canvas id="healthFactChart" width="500" height="500"></canvas>
+                  <canvas id="healthFactChart" width="500" height="300"></canvas>
                 </div>
             </div>
         </div>
@@ -55,6 +64,19 @@
             });
         </script>
         <script>
+            let healthPlanFactCtx = document.getElementById("healthPlanFactChart").getContext("2d");
+            let healthPlanFactChart = new Chart(healthPlanFactCtx, {
+                type: "bar",
+                options: {
+                    responsive: true,
+                    title: {
+                        display: false,
+                        text: ""
+                    },
+                }
+            });
+        </script>
+        <script>
             $(document).ready(
                 function() {
                     $.ajax(
@@ -63,10 +85,16 @@
                             type: "GET",
                             dataType: "json",
                             success: (jsonResponse) => {
-                                jsonResponse.options.forEach(option => {
+                                jsonResponse.years.forEach(option => {
                                     $("#year").append(new Option(option, option));
                                 });
-                                loadAllCharts($("#year").children().first().val());
+                                jsonResponse.directions.forEach(option => {
+                                    $("#direction").append(new Option(option[1], option[0]));
+                                });
+                                jsonResponse.diseases.forEach(option => {
+                                    $("#disease").append(new Option(option[1], option[0]));
+                                });
+                                loadAllCharts(); {# $("#year").children().first().val() #}
                             },
                             error: () => console.log("Failed to fetch chart filter options!")
                         }
@@ -77,8 +105,10 @@
             $("#filterForm").on("submit", (event) => {
                 event.preventDefault();
 
-                const year = $("#year").val();
-                loadAllCharts(year)
+                const years = $("#year").val();
+                const directions = $("#direction").val();
+                const diseases = $("#disease").val();
+                loadAllCharts(years, directions, diseases)
             });
 
             function loadChart(chart, endpoint) {
@@ -108,9 +138,21 @@
                 });
             }
 
-            function loadAllCharts(years) {
-                loadChart(healthPlanChart, `/health/health-plan-chart/?years=${years}`);
-                loadChart(healthFactChart, `/health/health-fact-chart/${years}/`);
+            function loadAllCharts(years, directions, diseases) {
+                let query_params =  '?';
+                if (years) {
+                    query_params = query_params.concat('years=', years, '&');
+                }
+                if (directions) {
+                    query_params = query_params.concat('directions=', directions, '&');
+                }
+                if (diseases) {
+                    query_params = query_params.concat('diseases=', diseases);
+                }
+                console.log(query_params)
+                loadChart(healthPlanChart, `/health/health-plan-chart/${query_params}`);
+                loadChart(healthFactChart, `/health/health-fact-chart/${query_params}`);
+                loadChart(healthPlanFactChart, `/health/health-plan-fact-chart/${query_params}`);
             }
         </script>
     </body>

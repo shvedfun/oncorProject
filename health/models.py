@@ -276,3 +276,21 @@ class ExaminationFact(models.Model):
         verbose_name_plural = "Проведенные обследования"
 
 
+class District(models.Model):
+    region = models.ForeignKey(to=Region, on_delete=models.PROTECT, verbose_name="Регион", db_comment="Регион")
+    name = models.CharField(max_length=200, verbose_name="Наименование", db_comment="Наименование")
+
+    class Meta:
+        verbose_name = "Район"
+        verbose_name_plural = "Районы"
+        db_table_comment = "Район"
+
+
+class MedOrganization(models.Model):
+    district = models.ForeignKey(to=District, on_delete=models.PROTECT, verbose_name="Район", db_comment="Район")
+    name = models.CharField(max_length=200, verbose_name="Наименование", db_comment="Наименование")
+
+    class Meta:
+        verbose_name = "Мед.организация"
+        verbose_name_plural = "Мед.организация"
+        db_table_comment = "Мед.организация"

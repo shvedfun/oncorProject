@@ -3,7 +3,7 @@ from django.contrib import admin
 from health.models import (
     Region, Person, DiseaseCategory, Disease, Direction, StageDisease, PersonDisease,
     Examination, ExaminationScheme, ExaminationPlan, ExaminationFact, Applicability,
-    Procedure
+    Procedure, District, MedOrganization
 )
 
 
@@ -87,3 +87,11 @@ class PersonDiseaseAdmin(admin.ModelAdmin):
     pass
 
 
+@admin.register(District)
+class DistrictAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name', 'region')
+
+
+@admin.register(MedOrganization)
+class MedOrganizationAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name', 'district',)

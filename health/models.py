@@ -43,6 +43,9 @@ class StageDisease(models.Model):
         verbose_name = "Этап заболевания"
         verbose_name_plural = "Этапы заболеваний"
 
+    def __str__(self):
+        return f'{self.name} ({self.id})'
+
 
 class GenderEnum(models.TextChoices):
     MAN = "М"
@@ -275,6 +278,8 @@ class ExaminationFact(models.Model):
         verbose_name = "Проведенное обследование"
         verbose_name_plural = "Проведенные обследования"
 
+    def __str__(self):
+        return f'{self.name} ({self.id})'
 
 class District(models.Model):
     region = models.ForeignKey(to=Region, on_delete=models.PROTECT, verbose_name="Регион", db_comment="Регион")
@@ -285,6 +290,9 @@ class District(models.Model):
         verbose_name_plural = "Районы"
         db_table_comment = "Район"
 
+    def __str__(self):
+        return f'{self.name} ({self.id})'
+
 
 class MedOrganization(models.Model):
     district = models.ForeignKey(to=District, on_delete=models.PROTECT, verbose_name="Район", db_comment="Район")
@@ -294,3 +302,6 @@ class MedOrganization(models.Model):
         verbose_name = "Мед.организация"
         verbose_name_plural = "Мед.организация"
         db_table_comment = "Мед.организация"
+
+    def __str__(self):
+        return f'{self.name} ({self.id})'

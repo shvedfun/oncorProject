@@ -94,4 +94,12 @@ class DistrictAdmin(admin.ModelAdmin):
 
 @admin.register(MedOrganization)
 class MedOrganizationAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'district',)
+    list_display = ('id', 'name', 'district', 'region')
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        qs.select_related("district__region")
+        return qs
+
+    def region(self, obj):
+        return obj.district.region

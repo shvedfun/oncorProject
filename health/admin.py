@@ -20,7 +20,7 @@ class ApplicabilityAdmin(admin.ModelAdmin):
 
 @admin.register(ExaminationFact)
 class ExaminationFactAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('id', 'examination', 'person', 'date')
 
     def get_queryset(self, request):
         qs = super(ExaminationFactAdmin, self).get_queryset(request)

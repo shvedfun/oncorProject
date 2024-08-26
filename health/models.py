@@ -279,7 +279,7 @@ class ExaminationFact(models.Model):
         verbose_name_plural = "Проведенные обследования"
 
     def __str__(self):
-        return f'{self.name} ({self.id})'
+        return f'{self.examination} ({self.id})'
 
 class District(models.Model):
     region = models.ForeignKey(to=Region, on_delete=models.PROTECT, verbose_name="Регион", db_comment="Регион")

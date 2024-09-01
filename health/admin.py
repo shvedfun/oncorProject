@@ -46,6 +46,8 @@ class ExaminationSchemeAdmin(admin.ModelAdmin):
 
 @admin.register(Examination)
 class ExaminationAdmin(admin.ModelAdmin):
+    list_display = ("id", "name", "disease", "gender", "applicability", ) # , "procedure"
+    list_editable = ("gender", )
     pass
 
 

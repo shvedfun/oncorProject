@@ -216,6 +216,9 @@ class Examination(models.Model):
     examination_scheme = models.JSONField(
         verbose_name="Схема обследования", db_comment="Схема обследования", null=True
     )
+    gender = models.CharField(
+        choices=GenderEnum.choices, max_length=2, verbose_name="Пол", db_comment="Пол", default=GenderEnum.ALL
+    )
 
     def __str__(self):
         return f'{self.name}'

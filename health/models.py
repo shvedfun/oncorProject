@@ -61,6 +61,13 @@ class GenderEnum(models.TextChoices):
             )
 
 
+GENDERCHOICES = {
+    GenderEnum.MAN: "Мужчина",
+    GenderEnum.WOMAN: "Женщина",
+    GenderEnum.ALL: "Все"
+}
+
+
 class Person(models.Model):
     name = models.CharField(max_length=200, verbose_name="ФИО", db_comment="ФИО")
     gender = models.CharField(choices=GenderEnum.choices, max_length=2, verbose_name="Пол", db_comment="Пол",
@@ -217,7 +224,7 @@ class Examination(models.Model):
         verbose_name="Схема обследования", db_comment="Схема обследования", null=True
     )
     gender = models.CharField(
-        choices=GenderEnum.choices, max_length=2, verbose_name="Пол", db_comment="Пол", default=GenderEnum.ALL
+        choices=GENDERCHOICES, max_length=2, verbose_name="Пол", db_comment="Пол", default=GenderEnum.ALL
     )
 
     def __str__(self):

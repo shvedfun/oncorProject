@@ -46,9 +46,16 @@ class ExaminationSchemeAdmin(admin.ModelAdmin):
 
 @admin.register(Examination)
 class ExaminationAdmin(admin.ModelAdmin):
-    list_display = ("id", "name", "disease", "gender", "applicability", ) # , "procedure"
-    list_editable = ("gender", )
-    pass
+    list_display = ("id", "name", "direction", "disease", "gender", "applicability", ) # , "procedure"
+    # list_editable = ("gender", )
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        qs.select_related("disease__direction", "applicability")
+        return qs
+
+    def direction(self, obj):
+        return obj.disease.direction
 
 
 @admin.register(Region)

@@ -4,13 +4,18 @@ FROM python:3.11-bookworm
 #
 #ENV RELEASE_VERSION=$RELEASE_VERSION
 
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
 RUN mkdir -p /app/media /app/static
 
-#COPY requrements.txt ./requrements.txt
-COPY . ./
+WORKDIR /app
 
-RUN pip install -r ./requrements.txt
+COPY . /app/
+
+
+RUN pip install -r ./requirements.txt
 
 #RUN echo ${RELEASE_VERSION} > RELEASE_VERSION
 
-CMD [ "gunicorn", "-c", "./gunicorn_conf.py" ]
+#CMD [ "gunicorn", "-c", "./gunicorn_conf.py" ]

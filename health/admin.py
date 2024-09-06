@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.utils.translation import gettext_lazy as _
 
 from health.models import (
     Region, Person, DiseaseCategory, Disease, Direction, StageDisease, PersonDisease,
@@ -6,6 +7,8 @@ from health.models import (
     Procedure, District, MedOrganization
 )
 
+admin.site.site_title = _("ОНКОР")
+admin.site.site_header = _('Здоровье региона')
 
 # Register your models here.
 @admin.register(Procedure)

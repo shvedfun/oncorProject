@@ -1,0 +1,36 @@
+services:
+
+  db:
+    image: postgres
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=health
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+
+  web:
+    build:
+      dockerfile: ./Dockerfile
+      context: .
+    image: oncore_back_web
+    ports:
+      - '8000:8000'
+    depends_on:
+      - db
+    volumes:
+#      - ${APP_VOLUME:-/dev/null:/dev/null}
+      - ./static:/app/static
+      - ./media:/app/media
+    environment:
+      - DB_NAME=health
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_HOST=db
+#    command: python manage.py runserver 0.0.0.0:8000
+    command: gunicorn -c ./gunicorn.conf.py project.wsgi
+
+volumes:
+  pgdata:

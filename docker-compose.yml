@@ -22,7 +22,7 @@ services:
       - db
     volumes:
 #      - ${APP_VOLUME:-/dev/null:/dev/null}
-      - ./static:/app/static
+      - ./static:/app/staticfiles
       - ./media:/app/media
     environment:
       - DB_NAME=health
@@ -31,6 +31,16 @@ services:
       - DB_HOST=db
 #    command: python manage.py runserver 0.0.0.0:8000
     command: gunicorn -c ./gunicorn.conf.py project.wsgi
+
+  nginx:
+    build: ./nginx
+    volumes:
+      - ./static:/static
+    ports:
+      - 1337:80
+    depends_on:
+      - web
+
 
 volumes:
   pgdata:

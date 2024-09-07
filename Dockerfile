@@ -13,8 +13,9 @@ WORKDIR /app
 
 COPY . /app/
 
-
 RUN pip install -r ./requirements.txt
+
+RUN mkdir /app/staticfiles
 
 #RUN echo ${RELEASE_VERSION} > RELEASE_VERSION
 

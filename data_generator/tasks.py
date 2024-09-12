@@ -281,6 +281,11 @@ class ExaminationFactGenerator:
             self._generate_fact_by_fullscheme(scheme4fact)
 
 
+def task_fact_raspred(region_id: int, year: int, direction_id: int=None):
+    raspred = ExaminationFactGenerator(region_id, year, direction_id)
+    raspred.generate_fact()
+
+
 def task_person2medorgs(region_ids: list):
     for region_id in region_ids:
         try:

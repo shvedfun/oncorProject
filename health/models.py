@@ -83,6 +83,10 @@ class Person(models.Model):
         to=Region, on_delete=models.CASCADE, verbose_name="Регион",
         related_name=_RELATED_BASE_NAME + "region", db_comment="Регион", null=True
     )
+    med_org = models.ForeignKey(
+        to='health.MedOrganization', on_delete=models.SET_NULL,
+        verbose_name="Мед.организация", db_comment="Мед.организация", null=True
+    )
 
     def age(self, to_date: date = None):
         if to_date is None:

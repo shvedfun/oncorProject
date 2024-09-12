@@ -8,7 +8,7 @@ import random
 from dateutil.relativedelta import relativedelta
 from typing import List
 
-from django.db.models import QuerySet, F, ExpressionWrapper, DurationField
+from django.db.models import QuerySet, Sum, F, ExpressionWrapper, FloatField, DurationField
 from django.db.models.functions import ExtractYear, Coalesce
 from django.db.transaction import atomic
 from django.utils import timezone
@@ -20,7 +20,8 @@ from data_generator.data_scheme import (
     PersonExaminationPlan, ExaminationWithDate, Scheme4FactGenerator, FactDistribution
 )
 
-from health.models import Person, Disease, Examination, ExaminationPlan, ExaminationFact, Direction, GenderEnum
+from health.models import Person, Disease, Examination, ExaminationPlan, ExaminationFact, Direction, GenderEnum, \
+    MedOrganization
 
 logger = logging.getLogger()
 
@@ -279,5 +280,26 @@ class ExaminationFactGenerator:
                 scheme4fact.year = self.year
             self._generate_fact_by_fullscheme(scheme4fact)
 
+
+def task_person2medorgs(region_ids: list):
+    for region_id in region_ids:
+        try:
+            persons = Person.objects.filter(
+                region_id=region_id
+            )
+            if persons.exists():
+                med_orgs = MedOrganization.objects.filter(
+                    district__region_id=region_id
+                ).annotate(
+                    sum_factors=Sum("factor")
+                ).annotate(
+                    coef=ExpressionWrapper(F("factor") / F("sum_factor"), FloatField())
+                ).values("id", "sum_factors", "coef", "factor")
+            for person in persons:
+                person.med_org = random.(med_orgs)
+        except Examination as e:
+            logger.error("Error as %r", e)
+        finally:
+            pass
 
 

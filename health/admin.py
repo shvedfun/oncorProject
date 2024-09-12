@@ -106,7 +106,7 @@ class DistrictAdmin(admin.ModelAdmin):
 
 @admin.register(MedOrganization)
 class MedOrganizationAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'district', 'region')
+    list_display = ('id', 'name', 'district', 'region', 'factor')
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)

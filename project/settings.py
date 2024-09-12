@@ -26,8 +26,9 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-3es%&%c-6$07@^=kn1=d%fd7q_
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = bool(os.getenv("DEBUG", True))
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '*').split(',')
-
+INTERNAL_IPS = ["127.0.0.1", "localhost"]
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '*').split(',') + INTERNAL_IPS
+CSRF_TRUSTED_ORIGINS = ["http://.172.28.66.97", ] + [f"http://{ip}" for ip in INTERNAL_IPS]
 
 # Application definition
 

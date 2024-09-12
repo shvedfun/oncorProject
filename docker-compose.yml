@@ -12,16 +12,15 @@ services:
       - POSTGRES_PASSWORD=postgres
 
   web:
-    build:
-      dockerfile: ./Dockerfile
-      context: .
-    image: oncore_back_web
+#    build:
+#      dockerfile: ./Dockerfile
+#      context: .
+    image: shvedfun/health_web:0.1
     ports:
       - '8000:8000'
     depends_on:
       - db
     volumes:
-#      - ${APP_VOLUME:-/dev/null:/dev/null}
       - ./static:/app/staticfiles
       - ./media:/app/media
     environment:
@@ -34,13 +33,13 @@ services:
 
   nginx:
     build: ./nginx
+#    image: shvedfun/health_nginx:0.1
     volumes:
       - ./static:/static
     ports:
-      - 1337:80
+      - 80:8080
     depends_on:
       - web
-
 
 volumes:
   pgdata:

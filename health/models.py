@@ -305,8 +305,14 @@ class District(models.Model):
 
 
 class MedOrganization(models.Model):
+    factor_choises = ((1, 1), (2, 2), (3, 3), (4, 4), (5, 5), (6, 6), (7, 7), (8, 8), (9, 9),(10, 10))
     district = models.ForeignKey(to=District, on_delete=models.PROTECT, verbose_name="Район", db_comment="Район")
     name = models.CharField(max_length=200, verbose_name="Наименование", db_comment="Наименование")
+    factor = models.PositiveSmallIntegerField(
+        choices=factor_choises,
+        verbose_name="Размер организации (от 1 до 10)",
+        default=factor_choises[(len(factor_choises)//2)][0]
+    )
 
     class Meta:
         verbose_name = "Мед.организация"

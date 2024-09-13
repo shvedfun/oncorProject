@@ -11,7 +11,7 @@ from health.models import Person, MedOrganization, Region
 logger = logging.getLogger()
 
 class Command(BaseCommand):
-    help = "Raspred person to medorgs"
+    help = "Распределение граждан по мед.организациями"
 
     def add_arguments(self, parser):
         parser.add_argument("region_ids", nargs="+", type=str)

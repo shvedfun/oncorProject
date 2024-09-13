@@ -297,12 +297,18 @@ def task_person2medorgs(region_ids: list):
                     district__region_id=region_id
                 ).annotate(
                     sum_factors=Sum("factor")
-                ).annotate(
-                    coef=ExpressionWrapper(F("factor") / F("sum_factor"), FloatField())
-                ).values("id", "sum_factors", "coef", "factor")
-            for person in persons:
-                person.med_org = random.(med_orgs)
-        except Examination as e:
+                ).values("id", "sum_factors", "factor")
+                med_list = []
+                weight_list = []
+                for med_org in med_orgs:
+                    med_list.append(med_org["id"])
+                    weight_list.append(med_org["factor"])
+            for i, person in enumerate(persons):
+                if i % 1000 == 0:
+                    logger.info("Обрабатываю %d жителя", i)
+                person.med_org_id = random.choices(med_list, weight_list)[0]
+                person.save(update_fields=["med_org", ])
+        except Exception as e:
             logger.error("Error as %r", e)
         finally:
             pass

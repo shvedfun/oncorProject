@@ -15,7 +15,7 @@ services:
     build:
       dockerfile: ./Dockerfile
       context: .
-    image: oncore_back_web
+    image: repo.oncor.pro/health_region/health_web
     ports:
       - '8000:8000'
 #    depends_on:
@@ -34,6 +34,7 @@ services:
 
   nginx:
     build: ./nginx
+    image: repo.oncor.pro/health_region/health_nginx
     volumes:
       - ./static:/static
     ports:

@@ -18,42 +18,35 @@ spec:
         env:
         - name: DB_USER
           valueFrom: 
-            secretFrom:
-              secretKeyRef:
-                name: secrets-health-region
-                key: DB_USER
+            secretKeyRef:
+              name: secrets-health-region
+              key: DB_USER
         - name: DB_HOST
           valueFrom: 
-            secretFrom:
-              secretKeyRef:
-                name: secrets-health-region
-                key: DB_HOST
+            secretKeyRef:
+              name: secrets-health-region
+              key: DB_HOST
         - name: DB_PORT
           valueFrom: 
-            secretFrom:
-              secretKeyRef:
-                name: secrets-health-region
-                key: DB_PORT
+            secretKeyRef:
+              name: secrets-health-region
+              key: DB_PORT
         - name: DB_NAME
           valueFrom: 
-            secretFrom:
-              secretKeyRef:
-                name: secrets-health-region
-                key: DB_NAME
+            secretKeyRef:
+              name: secrets-health-region
+              key: DB_NAME
         - name: DB_PASSWORD
           valueFrom: 
-            secretFrom:
-              secretKeyRef:
-                name: secrets-health-region
-                key: DB_PASSWORD
+            secretKeyRef:
+              name: secrets-health-region
+              key: DB_PASSWORD
         volumeMounts:
         - mountPath: /app/staticfiles
           name: static-volume
         - mountPath: /app/media
           name: media-volume
         command: ["gunicorn", "-c", "./gunicorn.conf.py", "project.wsgi"]
-#        imagePullSecrets:
-#          - name: nexus-secret
       volumes:
       - name: static-volume
         hostPath:

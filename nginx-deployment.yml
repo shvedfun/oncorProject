@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: repo.oncor.pro/health_region/health_nginx
+        volumeMounts:
+        - mountPath: /static
+          name: static-volume
+      volumes:
+      - name: static-volume
+        hostPath:
+          path: /app/static  
+      imagePullSecrets:
+        - name: nexus-secret

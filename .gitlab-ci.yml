@@ -20,3 +20,5 @@ deploy:
   script: 
     - kubectl apply -f web-deployment.yml -n health
     - kubectl apply -f nginx-deployment.yml -n health
+  only: 
+    - merge_request

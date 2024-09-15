@@ -12,6 +12,8 @@ build:
     - docker compose build
     - docker push repo.oncor.pro/health_region/health_web
     - docker push repo.oncor.pro/health_region/health_nginx
+  only: 
+    - merge_request
 
 deploy:
   tags: 

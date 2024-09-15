@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      containers:
+      - name: web
+        image: repo.oncor.pro/health_region/health_web
+        env:
+        - name: DB_NAME
+          value: "health"
+        - name: DB_USER
+          value: "postgres"
+        - name: DB_PASSWORD
+          value: "afaFA!911"
+        - name: DB_HOST
+          value: "172.28.66.97"
+        - name: DB_PORT
+          value: "30010"
+        volumeMounts:
+        - mountPath: /app/staticfiles
+          name: static-volume
+        - mountPath: /app/media
+          name: media-volume
+        command: ["gunicorn", "-c", "./gunicorn.conf.py", "project.wsgi"]
+#        imagePullSecrets:
+#          - name: nexus-secret
+      volumes:
+      - name: static-volume
+        hostPath:
+          path: /app/static  
+      - name: media-volume
+        hostPath:
+          path: /app/media  
+      imagePullSecrets:
+        - name: nexus-secret

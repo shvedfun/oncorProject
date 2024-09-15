@@ -46,10 +46,6 @@ spec:
               secretKeyRef:
                 name: secrets-health-region
                 key: DB_PASSWORD
-
-        envFrom:
-        - secretRef:
-          name: secrets-health-region
         volumeMounts:
         - mountPath: /app/staticfiles
           name: static-volume

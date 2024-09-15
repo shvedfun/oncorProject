@@ -1,0 +1,22 @@
+stages:
+  -build
+  -deploy
+
+
+
+build:
+  tags:
+    - runner.kube.assistant
+  stage: build
+  script:
+    - docker compose build
+    - docker push repo.oncor.pro/health_region/health_web
+    - docker push repo.oncor.pro/health_region/health_nginx
+
+deploy:
+  tags: 
+    - runner.kube.assistant
+  stage: deploy
+  script: 
+    - kubectl apply -f web-deployment -n health
+    - kubectl apply -f nginx-deployment -n health

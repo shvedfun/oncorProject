@@ -15,6 +15,38 @@ spec:
       containers:
       - name: web
         image: repo.oncor.pro/health_region/health_web
+        env:
+        - name: DB_USER
+          valueFrom: 
+            secretFrom:
+              secretKeyRef:
+                name: secrets-health-region
+                key: DB_USER
+        - name: DB_HOST
+          valueFrom: 
+            secretFrom:
+              secretKeyRef:
+                name: secrets-health-region
+                key: DB_HOST
+        - name: DB_PORT
+          valueFrom: 
+            secretFrom:
+              secretKeyRef:
+                name: secrets-health-region
+                key: DB_PORT
+        - name: DB_NAME
+          valueFrom: 
+            secretFrom:
+              secretKeyRef:
+                name: secrets-health-region
+                key: DB_NAME
+        - name: DB_PASSWORD
+          valueFrom: 
+            secretFrom:
+              secretKeyRef:
+                name: secrets-health-region
+                key: DB_PASSWORD
+
         envFrom:
         - secretRef:
           name: secrets-health-region

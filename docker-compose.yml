@@ -1,45 +1,47 @@
 services:
 
-  db:
-    image: postgres
-    ports:
-      - '5432:5432'
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_DB=health
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
+ # db:
+ #   image: postgres
+ #   ports:
+ #     - '5432:5432'
+ #   volumes:
+ #     - pgdata:/var/lib/postgresql/data
+ #   environment:
+ #     - POSTGRES_DB=health
+ #     - POSTGRES_USER=postgres
+ #     - POSTGRES_PASSWORD=postgres
 
   web:
-#    build:
-#      dockerfile: ./Dockerfile
-#      context: .
-    image: shvedfun/health_web:0.1
+    build:
+      dockerfile: ./Dockerfile
+      context: .
+    image: oncore_back_web
     ports:
       - '8000:8000'
-    depends_on:
-      - db
+#    depends_on:
+#      - db
     volumes:
+#      - ${APP_VOLUME:-/dev/null:/dev/null}
       - ./static:/app/staticfiles
       - ./media:/app/media
     environment:
       - DB_NAME=health
       - DB_USER=postgres
-      - DB_PASSWORD=postgres
-      - DB_HOST=db
-#    command: python manage.py runserver 0.0.0.0:8000
-    command: gunicorn -c ./gunicorn.conf.py project.wsgi
+      - DB_PASSWORD=afaFA!911
+      - DB_HOST=172.28.66.97
+      - DB_PORT=30010
+    command: ["bash", "-c", "python manage.py collectstatic --noinput && sleep 5 && gunicorn -c ./gunicorn.conf.py project.wsgi"]
 
   nginx:
     build: ./nginx
-#    image: shvedfun/health_nginx:0.1
     volumes:
       - ./static:/static
     ports:
-      - 80:8080
+      - 1337:80
     depends_on:
       - web
 
-volumes:
-  pgdata:
+
+
+#volumes:
+#  pgdata:

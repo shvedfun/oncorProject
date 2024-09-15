@@ -18,5 +18,5 @@ deploy:
     - runner.kube.assistant
   stage: deploy
   script: 
-    - kubectl apply -f web-deployment -n health
-    - kubectl apply -f nginx-deployment -n health
+    - kubectl apply -f web-deployment.yml -n health
+    - kubectl apply -f nginx-deployment.yml -n health

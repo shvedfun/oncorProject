@@ -28,7 +28,7 @@ DEBUG = bool(os.getenv("DEBUG", True))
 
 INTERNAL_IPS = ["127.0.0.1", "localhost"]
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '*').split(',') + INTERNAL_IPS
-CSRF_TRUSTED_ORIGINS = ["http://.172.28.66.97", ] + [f"http://{ip}" for ip in INTERNAL_IPS]
+CSRF_TRUSTED_ORIGINS = ["http://.172.28.66.97:32620", ] + [f"http://{ip}" for ip in INTERNAL_IPS]
 
 # Application definition
 
